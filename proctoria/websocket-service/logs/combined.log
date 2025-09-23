@@ -1,0 +1,246 @@
+{
+  message: 'WebSocket service running on port 8003',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:05:52'
+}
+{
+  message: 'Environment: production',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:05:52'
+}
+{
+  message: 'Redis client connected',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:05:52'
+}
+{
+  message: 'Redis client ready',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:05:52'
+}
+{
+  message: 'Redis connection established successfully',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:05:52'
+}
+{
+  message: 'SIGTERM received, shutting down gracefully',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:09:30'
+}
+{
+  message: 'WebSocket service running on port 8003',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:09:31'
+}
+{
+  message: 'Environment: production',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:09:31'
+}
+{
+  message: 'Redis client connected',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:09:31'
+}
+{
+  message: 'Redis client ready',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:09:31'
+}
+{
+  message: 'Redis connection established successfully',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:09:31'
+}
+{
+  message: 'SIGTERM received, shutting down gracefully',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:11:41'
+}
+{
+  message: 'WebSocket service running on port 3003',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:11:44'
+}
+{
+  message: 'Environment: production',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:11:44'
+}
+{
+  message: 'Redis client connected',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:11:44'
+}
+{
+  message: 'Redis client ready',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:11:44'
+}
+{
+  message: 'Redis connection established successfully',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:11:44'
+}
+{
+  message: 'SIGTERM received, shutting down gracefully',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:13:23'
+}
+{
+  message: 'WebSocket service running on port 3003',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:13:26'
+}
+{
+  message: 'Environment: production',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:13:26'
+}
+{
+  message: 'Redis client connected',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:13:26'
+}
+{
+  message: 'Redis client ready',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:13:26'
+}
+{
+  message: 'Redis connection established successfully',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:13:26'
+}
+{
+  message: 'SIGTERM received, shutting down gracefully',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:29:05'
+}
+{
+  message: 'WebSocket service running on port 8003',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:29:07'
+}
+{
+  message: 'Environment: production',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:29:07'
+}
+{
+  message: 'SIGTERM received, shutting down gracefully',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:31:46'
+}
+{
+  message: 'WebSocket service running on port 8003',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:31:47'
+}
+{
+  message: 'Environment: production',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:31:47'
+}
+{
+  message: 'SIGTERM received, shutting down gracefully',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:35:02'
+}
+{
+  message: 'WebSocket service running on port 8003',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:35:02'
+}
+{
+  message: 'Environment: production',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:35:02'
+}
+{
+  message: 'SIGTERM received, shutting down gracefully',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:36:25'
+}
+{
+  message: 'WebSocket service running on port 8003',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:36:29'
+}
+{
+  message: 'Environment: production',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:36:29'
+}
+{
+  message: 'SIGTERM received, shutting down gracefully',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:38:03'
+}
+{
+  message: 'WebSocket service running on port 8003',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:38:04'
+}
+{
+  message: 'Environment: production',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:38:04'
+}
+{
+  message: 'SIGTERM received, shutting down gracefully',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:39:51'
+}
+{
+  message: 'WebSocket service running on port 8003',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:40:53'
+}
+{
+  message: 'Environment: production',
+  level: 'info',
+  service: 'websocket-service',
+  timestamp: '2025-09-22 21:40:53'
+}

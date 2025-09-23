@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proctoria - AI-Powered Exam Proctoring Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/chart.js"></script>
+    <script src="https://unpkg.com/socket.io-client@4.7.4/dist/socket.io.js"></script>
+    <style>
+        .pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: .5;
+            }
+        }
+        
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        .status-healthy {
+            background-color: #10b981;
+        }
+        
+        .status-warning {
+            background-color: #f59e0b;
+        }
+        
+        .status-critical {
+            background-color: #ef4444;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-blue-900 text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <h1 class="text-2xl font-bold">Proctoria</h1>
+                    <span class="ml-3 text-blue-200">AI-Powered Exam Proctoring</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div id="system-status" class="flex items-center">
+                        <span class="status-indicator status-healthy pulse"></span>
+                        <span>System Online</span>
+                    </div>
+                    <div class="text-sm">
+                        <div>LearnAIx Hackathon 2025</div>
+                        <div class="text-blue-200">Live Demo</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Dashboard -->
+    <main class="container mx-auto px-6 py-8">
+        <!-- System Health Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <span id="backend-status" class="status-indicator status-healthy"></span>
+                    <h3 class="font-semibold text-gray-700">Backend API</h3>
+                </div>
+                <p class="text-2xl font-bold text-green-600 mt-2">Online</p>
+                <p class="text-sm text-gray-500">FastAPI + ML</p>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <span id="analytics-status" class="status-indicator status-healthy"></span>
+                    <h3 class="font-semibold text-gray-700">Analytics</h3>
+                </div>
+                <p class="text-2xl font-bold text-green-600 mt-2">Online</p>
+                <p class="text-sm text-gray-500">Node.js + Express</p>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <span id="plagiarism-status" class="status-indicator status-healthy"></span>
+                    <h3 class="font-semibold text-gray-700">Plagiarism</h3>
+                </div>
+                <p class="text-2xl font-bold text-green-600 mt-2">Online</p>
+                <p class="text-sm text-gray-500">Java Spring Boot</p>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <span id="websocket-status" class="status-indicator status-healthy"></span>
+                    <h3 class="font-semibold text-gray-700">WebSocket</h3>
+                </div>
+                <p class="text-2xl font-bold text-green-600 mt-2">Online</p>
+                <p class="text-sm text-gray-500">Socket.io + Redis</p>
+            </div>
+        </div>
+
+        <!-- Live Monitoring Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Active Sessions -->
+            <div class="bg-white rounded-lg shadow">
+                <div class="p-6 border-b">
+                    <h2 class="text-xl font-semibold text-gray-800">Active Exam Sessions</h2>
+                </div>
+                <div class="p-6">
+                    <div id="active-sessions" class="space-y-4">
+                        <!-- Sessions will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Violation Alerts -->
+            <div class="bg-white rounded-lg shadow">
+                <div class="p-6 border-b">
+                    <h2 class="text-xl font-semibold text-gray-800">Recent Violations</h2>
+                </div>
+                <div class="p-6">
+                    <div id="violations-list" class="space-y-3">
+                        <!-- Violations will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-white rounded-lg shadow">
+                <div class="p-6 border-b">
+                    <h2 class="text-xl font-semibold text-gray-800">Violation Types</h2>
+                </div>
+                <div class="p-6">
+                    <canvas id="violationChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow">
+                <div class="p-6 border-b">
+                    <h2 class="text-xl font-semibold text-gray-800">Session Activity</h2>
+                </div>
+                <div class="p-6">
+                    <canvas id="activityChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Live Demo Controls -->
+    <div class="fixed bottom-6 right-6">
+        <div class="bg-white rounded-lg shadow-lg p-4 max-w-sm">
+            <h3 class="font-semibold text-gray-800 mb-3">Demo Controls</h3>
+            <div class="space-y-2">
+                <button onclick="simulateViolation()" class="w-full bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                    Simulate Violation
+                </button>
+                <button onclick="addDemoSession()" class="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                    Add Demo Session
+                </button>
+                <button onclick="runSystemTest()" class="w-full bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                    System Health Check
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dashboard JavaScript
+        let socket;
+        let sessionData = [];
+        let violationData = [];
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+            loadDemoData();
+            connectWebSocket();
+            startHealthMonitoring();
+        });
+
+        // System health monitoring
+        async function startHealthMonitoring() {
+            const services = [
+                { name: 'backend', url: 'http://localhost:8000/health', element: 'backend-status' },
+                { name: 'analytics', url: 'http://localhost:3001/health', element: 'analytics-status' },
+                { name: 'plagiarism', url: 'http://localhost:8080/api/plagiarism/health', element: 'plagiarism-status' },
+                { name: 'websocket', url: 'http://localhost:3003/health', element: 'websocket-status' }
+            ];
+
+            for (const service of services) {
+                try {
+                    const response = await fetch(service.url);
+                    const element = document.getElementById(service.element);
+                    if (response.ok) {
+                        element.className = 'status-indicator status-healthy';
+                    } else {
+                        element.className = 'status-indicator status-warning';
+                    }
+                } catch (error) {
+                    const element = document.getElementById(service.element);
+                    element.className = 'status-indicator status-critical';
+                }
+            }
+        }
+
+        // WebSocket connection
+        function connectWebSocket() {
+            try {
+                socket = io('http://localhost:3003');
+                
+                socket.on('connect', () => {
+                    console.log('Connected to WebSocket');
+                    document.getElementById('websocket-status').className = 'status-indicator status-healthy';
+                });
+
+                socket.on('violation_alert', (data) => {
+                    addViolation(data);
+                });
+
+                socket.on('session_update', (data) => {
+                    updateSession(data);
+                });
+            } catch (error) {
+                console.error('WebSocket connection failed:', error);
+            }
+        }
+
+        // Load demo data
+        function loadDemoData() {
+            // Demo sessions
+            sessionData = [
+                {
+                    id: 'demo_exam_001',
+                    student: 'Alice Johnson',
+                    exam: 'CS101 Midterm',
+                    status: 'active',
+                    duration: '45 min',
+                    violations: 2
+                },
+                {
+                    id: 'demo_exam_002',
+                    student: 'Bob Smith',
+                    exam: 'Math202 Final',
+                    status: 'active',
+                    duration: '1h 20min',
+                    violations: 0
+                }
+            ];
+
+            // Demo violations
+            violationData = [
+                {
+                    session: 'Alice Johnson',
+                    type: 'Face Not Visible',
+                    severity: 'warning',
+                    time: '2 min ago'
+                },
+                {
+                    session: 'Alice Johnson',
+                    type: 'Multiple Persons',
+                    severity: 'critical',
+                    time: '5 min ago'
+                }
+            ];
+
+            updateDashboard();
+        }
+
+        // Update dashboard display
+        function updateDashboard() {
+            // Update sessions
+            const sessionsContainer = document.getElementById('active-sessions');
+            sessionsContainer.innerHTML = sessionData.map(session => `
+                <div class="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                        <h4 class="font-semibold">${session.student}</h4>
+                        <p class="text-sm text-gray-600">${session.exam}</p>
+                        <p class="text-xs text-gray-500">Duration: ${session.duration}</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="inline-block px-2 py-1 text-xs rounded-full ${session.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
+                            ${session.status}
+                        </span>
+                        <p class="text-sm mt-1">Violations: ${session.violations}</p>
+                    </div>
+                </div>
+            `).join('');
+
+            // Update violations
+            const violationsContainer = document.getElementById('violations-list');
+            violationsContainer.innerHTML = violationData.map(violation => `
+                <div class="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                        <h5 class="font-medium">${violation.session}</h5>
+                        <p class="text-sm text-gray-600">${violation.type}</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="inline-block px-2 py-1 text-xs rounded-full ${violation.severity === 'critical' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}">
+                            ${violation.severity}
+                        </span>
+                        <p class="text-xs text-gray-500">${violation.time}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Initialize charts
+        function initializeCharts() {
+            // Violation types chart
+            const violationCtx = document.getElementById('violationChart').getContext('2d');
+            new Chart(violationCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Face Not Visible', 'Multiple Persons', 'Audio Issues', 'Suspicious Movement'],
+                    datasets: [{
+                        data: [12, 8, 3, 2],
+                        backgroundColor: ['#ef4444', '#f59e0b', '#3b82f6', '#8b5cf6']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Activity chart
+            const activityCtx = document.getElementById('activityChart').getContext('2d');
+            new Chart(activityCtx, {
+                type: 'line',
+                data: {
+                    labels: ['9:00', '9:30', '10:00', '10:30', '11:00', '11:30'],
+                    datasets: [{
+                        label: 'Active Sessions',
+                        data: [5, 8, 12, 15, 18, 14],
+                        borderColor: '#3b82f6',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Demo control functions
+        function simulateViolation() {
+            const violations = ['Face Not Visible', 'Multiple Persons', 'Audio Issues', 'Phone Detected'];
+            const severities = ['warning', 'critical'];
+            const students = ['Alice Johnson', 'Bob Smith'];
+            
+            const newViolation = {
+                session: students[Math.floor(Math.random() * students.length)],
+                type: violations[Math.floor(Math.random() * violations.length)],
+                severity: severities[Math.floor(Math.random() * severities.length)],
+                time: 'Just now'
+            };
+            
+            violationData.unshift(newViolation);
+            if (violationData.length > 5) violationData.pop();
+            
+            updateDashboard();
+        }
+
+        function addDemoSession() {
+            const newSession = {
+                id: 'demo_exam_' + Date.now(),
+                student: 'Demo Student ' + Math.floor(Math.random() * 100),
+                exam: 'Demo Exam',
+                status: 'active',
+                duration: '0 min',
+                violations: 0
+            };
+            
+            sessionData.push(newSession);
+            updateDashboard();
+        }
+
+        async function runSystemTest() {
+            await startHealthMonitoring();
+            alert('System health check completed! Check the status indicators.');
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(() => {
+            startHealthMonitoring();
+        }, 30000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,272 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: proctoria_postgres
+    restart: unless  # WebSocket Service
+  websocket:
+    build:
+      context: ./websocket-service
+      dockerfile: Dockerfile
+    container_name: proctoria_websocket
+    ports:
+      - "3003:8003"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=redis_pass_2024
+      - REDIS_DB=3
+      - JWT_SECRET=proctoria_jwt_secret_2024
+      - LOG_LEVEL=info
+      - ENVIRONMENT=production
+      - PROCTORING_API_URL=http://backend:8000
+      - ANALYTICS_API_URL=http://analytics:3001
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:5173,https://learnaixproctoria.local,http://host.docker.internal:8888
+      - MOODLE_HOST=host.docker.internal:8888
+    extra_hosts:
+      - "host.docker.internal:host-gateway"ment:
+      POSTGRES_DB: proctoria
+      POSTGRES_USER: proctoria_user
+      POSTGRES_PASSWORD: proctoria_password
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5433:5432"  # Changed from 5432 to 5433
+    networks:
+      - proctoria_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U proctoria_user -d proctoria"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: proctoria_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - proctoria_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    command: redis-server --appendonly yes --requirepass redis_pass_2024
+
+  # FastAPI Backend Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: proctoria_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://proctoria_user:proctoria_password@postgres:5432/proctoria
+      - REDIS_URL=redis://:redis_pass_2024@redis:6379/0
+      - JWT_SECRET=proctoria_jwt_secret_2024
+      - LOG_LEVEL=info
+      - ENVIRONMENT=production
+      - API_VERSION=v1
+      - WEBSOCKET_URL=http://websocket:3003
+      - ANALYTICS_URL=http://analytics:3001
+      - PLAGIARISM_URL=http://plagiarism:8080
+      - MOODLE_HOST=host.docker.internal:8888
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./backend/ml_models:/app/ml_models
+      - ./backend/uploads:/app/uploads
+      - ./backend/logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - proctoria_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Analytics Service
+  analytics:
+    build:
+      context: ./analytics-service
+      dockerfile: Dockerfile
+    container_name: proctoria_analytics
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - DATABASE_URL=postgresql://proctoria_user:proctoria_password@postgres:5432/proctoria
+      - REDIS_URL=redis://:redis_pass_2024@redis:6379/1
+      - JWT_SECRET=proctoria_jwt_secret_2024
+      - LOG_LEVEL=info
+      - ENVIRONMENT=production
+      - BACKEND_URL=http://backend:8000
+      - MOODLE_HOST=host.docker.internal:8888
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./analytics-service/logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - proctoria_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Plagiarism Detection Service
+  plagiarism:
+    build:
+      context: ./plagiarism-service
+      dockerfile: Dockerfile
+    container_name: proctoria_plagiarism
+    ports:
+      - "8080:8080"
+    environment:
+      - DATABASE_URL=postgresql://proctoria_user:proctoria_password@postgres:5432/proctoria
+      - REDIS_URL=redis://:redis_pass_2024@redis:6379/2
+      - JWT_SECRET=proctoria_jwt_secret_2024
+      - LOG_LEVEL=info
+      - ENVIRONMENT=production
+      - JPLAG_MEMORY=2g
+    volumes:
+      - ./plagiarism-service/temp:/app/temp
+      - ./plagiarism-service/reports:/app/reports
+      - ./plagiarism-service/logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - proctoria_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/plagiarism/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # WebSocket Service
+  websocket:
+    build:
+      context: ./websocket-service
+      dockerfile: Dockerfile
+    container_name: proctoria_websocket
+    ports:
+      - "3003:8003"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=redis_pass_2024
+      - REDIS_DB=3
+      - JWT_SECRET=proctoria_jwt_secret_2024
+      - LOG_LEVEL=info
+      - ENVIRONMENT=production
+      - PROCTORING_API_URL=http://backend:8000
+      - ANALYTICS_API_URL=http://analytics:3001
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:5173,https://learnaixproctoria.local
+    volumes:
+      - ./websocket-service/logs:/app/logs
+    depends_on:
+      redis:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    networks:
+      - proctoria_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: proctoria_nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+      - ./nginx/logs:/var/log/nginx
+    depends_on:
+      - backend
+      - analytics
+      - plagiarism
+      - websocket
+    networks:
+      - proctoria_network
+    restart: unless-stopped
+
+  # Monitoring with Prometheus (Optional)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: proctoria_prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - proctoria_network
+    profiles: ["monitoring"]
+
+  # Grafana Dashboard (Optional)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: proctoria_grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+    networks:
+      - proctoria_network
+    profiles: ["monitoring"]
+
+volumes:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  proctoria_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
