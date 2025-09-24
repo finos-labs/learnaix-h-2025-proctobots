@@ -36,7 +36,7 @@ Distributed under the Apache License, Version 2.0.
 Copyright 2025 FINOS
 
 Distributed under the Apache License, Version 2.0.
-Distributed under the Apache License, Version 2.0.
+
 
 `SPDX-License-Identifier: Apache-2.0/`
 `SPDX-License-Identifier: Apache-2.0/`
