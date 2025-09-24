@@ -33,6 +33,10 @@ Our system basically solves the problem of online tests being fair and credible,
 Copyright 2025 FINOS
 
 Distributed under the Apache License, Version 2.0.
+Copyright 2025 FINOS
 
+Distributed under the Apache License, Version 2.0.
+
+`SPDX-License-Identifier: Apache-2.0/`
 `SPDX-License-Identifier: Apache-2.0/`
 
